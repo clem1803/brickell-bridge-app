@@ -31,9 +31,9 @@ function extractStructuredRow($: cheerio.CheerioAPI): Omit<BridgeStatusResult, '
 
   for (let i = 0; i < tables.length; i += 1) {
     const table = tables.eq(i);
-    const rows = table.find('tr');
+    const rows = table.find('tr').toArray();
 
-    rows.each((_, row) => {
+    for (const row of rows) {
       const cells = $(row)
         .find('th,td')
         .map((__, cell) => normalizeWhitespace($(cell).text()))
@@ -43,6 +43,7 @@ function extractStructuredRow($: cheerio.CheerioAPI): Omit<BridgeStatusResult, '
       if (cells.length >= 2 && cells.join(' ').toLowerCase().includes(BRIDGE_NAME_MATCH)) {
         const joined = cells.join(' | ');
         const rawStatus = cells[cells.length - 1] || 'Unknown';
+
         return {
           bridgeName: cells[0] || 'Brickell Avenue Bridge',
           location: cells[1],
@@ -53,7 +54,7 @@ function extractStructuredRow($: cheerio.CheerioAPI): Omit<BridgeStatusResult, '
           note: `Matched structured table row: ${joined}`
         };
       }
-    });
+    }
   }
 
   return null;
